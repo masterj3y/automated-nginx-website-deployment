@@ -1,0 +1,17 @@
+- name: Install zip
+  ansible.builtin.package:
+    name: zip
+    state: latest 
+
+- name: Clean existing website
+  become: true
+  changed_when: false
+  ansible.builtin.command: 
+    cmd: rm * -rf
+    chdir: /usr/share/nginx/html/
+
+- name: Deploy website
+  ansible.builtin.unarchive:
+    src: website.zip
+    dest: /usr/share/nginx/html/
+

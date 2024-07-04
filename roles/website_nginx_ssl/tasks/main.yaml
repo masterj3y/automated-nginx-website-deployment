@@ -1,0 +1,7 @@
+- name: Update website Nginx and SSL config
+  ansible.builtin.template:
+    src: website.conf
+    dest: /etc/nginx/conf.d/default.conf
+    owner: root
+    group: root
+    mode: 0644

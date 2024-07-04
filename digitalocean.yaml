@@ -1,0 +1,20 @@
+---
+plugin: community.digitalocean.digitalocean
+api_token: "{{ lookup('env', 'DO_TOKEN') }}"
+attributes:
+# which fields provided by the inventory plugin do we want to use
+   - name
+   - tags
+   - networks
+keyed_groups:
+# which attributes do we want to use to map hosts into groups
+# the default var_prefix for this plugin is `do_`
+# so the `tags` attribute becomes `do_tags`
+   - key: do_tags
+leading_separator: no  # no leading underscore in front of host group name
+compose:
+# compose uses Jinja expressions to process attributes into Ansible variables
+# we need to parse the `networks` attribute, which is prefixed to be `do_networks`
+# into a resolvable `ansible_host` variable.
+   ansible_host: do_networks.v4 | selectattr('type','eq','public')
+      | map(attribute='ip_address') | first

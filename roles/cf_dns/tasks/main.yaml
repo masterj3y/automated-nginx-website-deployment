@@ -1,0 +1,10 @@
+- name: Add DNS record
+  community.general.cloudflare_dns:
+    zone: "{{ DNS_ZONE }}"
+    record: "@"
+    type: A
+    value: "{{ ansible_host }}" 
+    ttl: 300
+    proxied: false
+    state: present
+    api_token: "{{ CF_API_TOKEN }}"

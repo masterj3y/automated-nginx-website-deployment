@@ -1,0 +1,56 @@
+- name: Wait for connection
+  hosts: website-server
+  gather_facts: false
+  vars:
+    - wait_for_ssh: true
+  tasks:
+    - wait_for_connection:
+
+- name: Ensure DNS record is set
+  hosts: website-server
+  vars_files:
+    - variables.yaml
+  roles:
+    - cf_dns 
+
+- name: Ensure Nginx is installed
+  hosts: website-server
+  become: true
+  roles:
+    - nginxinc.nginx
+
+- name: Ensure website is deployed
+  hosts: website-server
+  become: true
+  roles: 
+    - website
+
+- name: Ensure SSL certificate is generated using certbot
+  hosts: website-server
+  become: true
+  vars_files:
+    - variables.yaml
+  roles:
+    - role: geerlingguy.certbot
+      certbot_create_if_missing: true
+      certbot_admin_email: "{{ EMAIL }}"
+      certbot_certs:
+        - domains:
+            - "{{ DNS_ZONE }}"
+
+- name: Ensure Nginx and SSL is configured for website
+  hosts: website-server
+  become: true
+  vars_files: 
+    - variables.yaml
+  roles:
+    - website_nginx_ssl
+
+- name: Ensure Nginx is restarted
+  hosts: website-server
+  become: true
+  tasks:
+    - name: Restart Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
